@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cl_crud_planeta"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".CrudPlaneta">
+
+    <EditText
+        android:id="@+id/input_nombre_planeta"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="Nombre del planeta"
+        android:inputType="text"
+        android:layout_margin="16dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <EditText
+        android:id="@+id/input_distancia_sol"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="Distancia al Sol (millones de km)"
+        android:inputType="numberDecimal"
+        android:layout_margin="16dp"
+        app:layout_constraintTop_toBottomOf="@id/input_nombre_planeta"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <EditText
+        android:id="@+id/input_tipo_planeta"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="Tipo de planeta (rocoso, gaseoso)"
+        android:inputType="text"
+        android:layout_margin="16dp"
+        app:layout_constraintTop_toBottomOf="@id/input_distancia_sol"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <EditText
+        android:id="@+id/input_diametro"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="Diámetro (km)"
+        android:inputType="numberDecimal"
+        android:layout_margin="16dp"
+        app:layout_constraintTop_toBottomOf="@id/input_tipo_planeta"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <Button
+        android:id="@+id/btn_guardar_planeta"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Guardar"
+        app:layout_constraintTop_toBottomOf="@id/input_diametro"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:backgroundTint="#3F51B5"
+        android:textColor="#FFFFFF"
+        android:layout_margin="16dp" />
+</androidx.constraintlayout.widget.ConstraintLayout>
