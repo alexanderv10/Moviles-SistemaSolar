@@ -6,16 +6,22 @@ import android.os.Parcelable
 data class Planeta(
     val id: Int,
     val nombre: String,
-    val distanciaAlSol: Double,
     val tipoPlaneta: String,
+    val distanciaAlSol: Double,
     val diametro: Double,
+    val habitable: Boolean,
+    val latitud: Double,
+    val longitud: Double,
     val sistemaSolarId: Int
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readInt(),
         parcel.readString()!!,
-        parcel.readDouble(),
         parcel.readString()!!,
+        parcel.readDouble(),
+        parcel.readDouble(),
+        parcel.readByte() != 0.toByte(),
+        parcel.readDouble(),
         parcel.readDouble(),
         parcel.readInt()
     )
@@ -23,9 +29,12 @@ data class Planeta(
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeInt(id)
         parcel.writeString(nombre)
-        parcel.writeDouble(distanciaAlSol)
         parcel.writeString(tipoPlaneta)
+        parcel.writeDouble(distanciaAlSol)
         parcel.writeDouble(diametro)
+        parcel.writeByte(if (habitable) 1 else 0)
+        parcel.writeDouble(latitud)
+        parcel.writeDouble(longitud)
         parcel.writeInt(sistemaSolarId)
     }
 

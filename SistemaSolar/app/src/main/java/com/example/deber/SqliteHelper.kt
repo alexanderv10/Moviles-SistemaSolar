@@ -4,8 +4,9 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import android.util.Log
 
-class SqliteHelper(context: Context?) : SQLiteOpenHelper(context, "sistema_solar_db", null, 1) {
+class SqliteHelper(context: Context?) : SQLiteOpenHelper(context, "sistema_solar_db", null, 2) {
 
     override fun onCreate(db: SQLiteDatabase?) {
         db?.execSQL("PRAGMA foreign_keys = ON;")
@@ -23,13 +24,16 @@ class SqliteHelper(context: Context?) : SQLiteOpenHelper(context, "sistema_solar
         db?.execSQL(scriptCrearTablaSistemaSolar)
 
         val scriptCrearTablaPlaneta = """
-            CREATE TABLE Planeta(
+            CREATE TABLE Planeta (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 nombre TEXT NOT NULL,
-                distanciaAlSol REAL NOT NULL,
                 tipoPlaneta TEXT NOT NULL,
+                distanciaAlSol REAL NOT NULL,
                 diametro REAL NOT NULL,
-                sistemaSolarId INTEGER NOT NULL,
+                habitable BOOLEAN,
+                latitud REAL NOT NULL,
+                longitud REAL NOT NULL,
+                sistemaSolarId INTEGER,
                 FOREIGN KEY(sistemaSolarId) REFERENCES SistemaSolar(id) ON DELETE CASCADE
             )
         """
@@ -37,13 +41,21 @@ class SqliteHelper(context: Context?) : SQLiteOpenHelper(context, "sistema_solar
     }
 
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
-        db?.execSQL("DROP TABLE IF EXISTS Planeta")
-        db?.execSQL("DROP TABLE IF EXISTS SistemaSolar")
-        onCreate(db)
+        if (oldVersion < 2) {
+            db?.execSQL("DROP TABLE IF EXISTS Planeta")
+            db?.execSQL("DROP TABLE IF EXISTS SistemaSolar")
+            onCreate(db)
+        }
     }
 
     // CRUD para Sistema Solar
-    fun crearSistemaSolar(nombre: String, descripcion: String, edad: Int, tipoEstrella: String, esHabitable: Boolean): Boolean {
+    fun crearSistemaSolar(
+        nombre: String,
+        descripcion: String,
+        edad: Int,
+        tipoEstrella: String,
+        esHabitable: Boolean
+    ): Boolean {
         val db = writableDatabase
         val valores = ContentValues().apply {
             put("nombre", nombre)
@@ -79,7 +91,14 @@ class SqliteHelper(context: Context?) : SQLiteOpenHelper(context, "sistema_solar
         return lista
     }
 
-    fun actualizarSistemaSolar(nombre: String, descripcion: String, edad: Int, tipoEstrella: String, esHabitable: Boolean, id: Int): Boolean {
+    fun actualizarSistemaSolar(
+        nombre: String,
+        descripcion: String,
+        edad: Int,
+        tipoEstrella: String,
+        esHabitable: Boolean,
+        id: Int
+    ): Boolean {
         val db = writableDatabase
         val valores = ContentValues().apply {
             put("nombre", nombre)
@@ -101,33 +120,58 @@ class SqliteHelper(context: Context?) : SQLiteOpenHelper(context, "sistema_solar
     }
 
     // CRUD para Planeta
-    fun crearPlaneta(nombre: String, distanciaAlSol: Double, tipoPlaneta: String, diametro: Double, sistemaSolarId: Int): Boolean {
+    fun crearPlaneta(
+        nombre: String,
+        tipoPlaneta: String,
+        distanciaAlSol: Double,
+        diametro: Double,
+        habitable: Boolean,
+        latitud: Double,
+        longitud: Double,
+        sistemaSolarId: Int
+    ): Boolean {
         val db = writableDatabase
         val valores = ContentValues().apply {
             put("nombre", nombre)
-            put("distanciaAlSol", distanciaAlSol)
             put("tipoPlaneta", tipoPlaneta)
+            put("distanciaAlSol", distanciaAlSol)
             put("diametro", diametro)
+            put("habitable", habitable)
+            put("latitud", latitud)
+            put("longitud", longitud)
             put("sistemaSolarId", sistemaSolarId)
         }
-        val resultado = db.insert("Planeta", null, valores)
-        db.close()
-        return resultado != -1L
+
+        return try {
+            val resultado = db.insertOrThrow("Planeta", null, valores)
+            db.close()
+            resultado != -1L
+        } catch (e: Exception) {
+            Log.e("SqliteHelper", "Error al insertar el planeta: ${e.message}")
+            db.close()
+            false
+        }
     }
 
     fun obtenerPlanetasPorSistemaSolar(sistemaSolarId: Int): List<Planeta> {
         val lista = mutableListOf<Planeta>()
         val db = readableDatabase
-        val cursor = db.rawQuery("SELECT * FROM Planeta WHERE sistemaSolarId = ?", arrayOf(sistemaSolarId.toString()))
+        val cursor = db.rawQuery(
+            "SELECT * FROM Planeta WHERE sistemaSolarId = ?",
+            arrayOf(sistemaSolarId.toString())
+        )
         if (cursor.moveToFirst()) {
             do {
                 val planeta = Planeta(
                     id = cursor.getInt(0),
                     nombre = cursor.getString(1),
-                    distanciaAlSol = cursor.getDouble(2),
-                    tipoPlaneta = cursor.getString(3),
+                    tipoPlaneta = cursor.getString(2),
+                    distanciaAlSol = cursor.getDouble(3),
                     diametro = cursor.getDouble(4),
-                    sistemaSolarId = cursor.getInt(5)
+                    habitable = cursor.getInt(5) == 1,
+                    latitud = cursor.getDouble(6),
+                    longitud = cursor.getDouble(7),
+                    sistemaSolarId = cursor.getInt(8)
                 )
                 lista.add(planeta)
             } while (cursor.moveToNext())
@@ -137,13 +181,25 @@ class SqliteHelper(context: Context?) : SQLiteOpenHelper(context, "sistema_solar
         return lista
     }
 
-    fun actualizarPlaneta(nombre: String, distanciaAlSol: Double, tipoPlaneta: String, diametro: Double, id: Int): Boolean {
+    fun actualizarPlaneta(
+        nombre: String,
+        distanciaAlSol: Double,
+        tipoPlaneta: String,
+        diametro: Double,
+        habitable: Boolean,
+        latitud: Double,
+        longitud: Double,
+        id: Int
+    ): Boolean {
         val db = writableDatabase
         val valores = ContentValues().apply {
             put("nombre", nombre)
             put("distanciaAlSol", distanciaAlSol)
             put("tipoPlaneta", tipoPlaneta)
             put("diametro", diametro)
+            put("habitable", habitable)
+            put("latitud", latitud)
+            put("longitud", longitud)
         }
         val resultado = db.update("Planeta", valores, "id=?", arrayOf(id.toString()))
         db.close()

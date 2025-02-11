@@ -61,6 +61,11 @@ class PlanetaListView : AppCompatActivity() {
                 abrirDialogoEliminar()
                 true
             }
+            R.id.mi_abrir_mapa -> {
+                val planetaSeleccionado = listaPlanetas[posicionItemSeleccionado]
+                abrirMapa(planetaSeleccionado.latitud, planetaSeleccionado.longitud)
+                true
+            }
             else -> super.onContextItemSelected(item)
         }
     }
@@ -101,6 +106,13 @@ class PlanetaListView : AppCompatActivity() {
             intent.putExtra("modo", "crear")
         }
         startActivityForResult(intent, 1)
+    }
+
+    private fun abrirMapa(latitud: Double, longitud: Double) {
+        val intent = Intent(this, MapaActivity::class.java)
+        intent.putExtra("latitud", latitud)
+        intent.putExtra("longitud", longitud)
+        startActivity(intent)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
